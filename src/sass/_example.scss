@@ -26,23 +26,29 @@
   background-size: cover;
   background-position: center;
 }
-body{
-  text-align: center;
+
+div{
+  display: inline;
 }
 
 a{
   text-decoration: none;
   color: #2f2f37;
 }
-.gallery{
+.gallery-recipes{
   display: flex;
-  justify-content: center;
+  
   flex-wrap: wrap;
   gap: 6px;
  
 }
-.photo-card{
 
+.gallery__item{
+    display: flex;
+    flex-direction: column;
+}
+.recipe-card{
+  
    border: 1px solid rgb(243, 239, 239);
    padding: 2px;
    border-radius:0 0 20px  20px;
@@ -54,13 +60,6 @@ transition: transform 400ms ease-out;
     }
     
 }
-
-.info{
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-}
-
 
 
  img{

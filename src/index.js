@@ -1,110 +1,50 @@
-import SimpleLightbox from "simplelightbox";
+import Dishes from "./server.js";
+ 
+import simpleLightbox from "simplelightbox";
+
 import "simplelightbox/dist/simple-lightbox.min.css";
-import ApiService from "./server.js";
-import Notiflix from 'notiflix';
-import throttle from "lodash.throttle";
+
+
+
 
  
+const galleryEls = document.querySelector('.gallery-recipes'); 
+const searchForm = document.querySelector('#search-form')
+const newDishes = new Dishes();
+searchForm.addEventListener('submit', onSearchFood)
 
-const DELAY = 500;
-const galleryEls = document.querySelector('.gallery'); 
-const newApiService = new ApiService();
-
-const refs = {
-    searchForm: document.querySelector('#search-form'),
-  loadMore: document.querySelector('.load-more') 
-}
-
-refs.searchForm.addEventListener("submit", onSearch);
-// refs.loadMore.addEventListener('click', onLoadMore)
- 
-
-function onSearch(e) {
+function onSearchFood(e){
     e.preventDefault();
-    
-  newApiService.querry =  e.target.elements.searchQuery.value.trim()
-   newApiService.resetPage()
-   
-  newApiService.fetchPic().then(data => {
+    newDishes.querry = e.currentTarget.elements.searchQuery.value.trim()
+    newDishes.findDish().then(response => {
+        response.data.results 
+        console.log(response.data.results)
 
-    if (newApiService.querry ==="" || data.data.total === 0 ) {
-      Notiflix.Notify.failure("Sorry, there are no images matching your search query. Please try again."); 
-      return
-      }
-    else {
-        Notiflix.Notify.info(`Hooray! We found ${data.data.total} images.`);
-      destroyMarkup(galleryEls)
-      e.target.elements.searchQuery.value =""
-      
-     }  
-        
-    const markupGaleryEls = createMarkupGalleryEls(data.data.hits) 
-        galleryEls.insertAdjacentHTML('beforeend', markupGaleryEls)
+         const markupGaleryRecipes = createMarkupGalleryEls(response.data.results)
+        galleryEls.insertAdjacentHTML('beforeend', markupGaleryRecipes)
         let lightbox = new SimpleLightbox('.gallery__item', {
            
         });
-   })
 
+    })
 }
-function onLoadMore() {
-
-
-  newApiService.fetchPic().then(data => {
-
-  const markupGaleryEls = createMarkupGalleryEls(data.data.hits) 
-  galleryEls.insertAdjacentHTML('beforeend', markupGaleryEls)
-  let lightbox = new SimpleLightbox('.gallery__item');
-    }) 
-}
-
+ 
 function createMarkupGalleryEls(e) {
-    return e.map(({ webformatURL, largeImageURL, tags, likes, views, comments,downloads }) => {
+    return e.map(({image,title }) => {
         return `
-        <div class="photo-card">
+          <div class="recipe-card">
          <a class="gallery__item"
-        href= "${largeImageURL}">
-        <div class = "wrapper-img">
-  <img src="${webformatURL}"  alt="${tags}" loading="lazy" />
-</div>
-  <div class="info">
-    <p class="info-item">
-      <b>Likes</b> <p>${likes}</p>
-    </p>
-    <p class="info-item">
-      <b>Views</b> <p>${views}</p>
-    </p>
-    <p class="info-item">
-      <b>Comments</b><p>${comments}</p>
-    </p>
-    <p class="info-item">
-      <b>Downloads</b><p>${downloads}</p>
-    </p>
-  </div>
+        href= "${image}" >
+      <div class="wrapper-img"><img src="${image}" alt="img" loading="lazy" /></div>
+
+
+
+  
+
+  <div class="recipe-title">"${title}"</div>   
+
 </div>
   `
 })
 .join('');
 }
-
-function destroyMarkup(e) {
-    e.innerHTML = "";
-}
-
-window.addEventListener("scroll", throttle(onLoadScroll, DELAY))
-
-function onLoadScroll() {
-
-  const documentRctgl = document.documentElement.getBoundingClientRect()
-
-  window.scrollBy({ behavior: "smooth", });
-  
-  if (documentRctgl.bottom < document.documentElement.clientHeight + 400) {
-    onLoadMore()
-    
-     if(documentRctgl.bottom < document.documentElement.clientHeight ) {
-   Notiflix.Notify.warning("We're sorry, but you've reached the end of search results.");
-  }
-  }
-}
-
-
